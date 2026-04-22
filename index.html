@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>בקשת פרויקט הנדסי</title>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:       #0d1b2a;
+      --navy-mid:   #1b2d42;
+      --navy-light: #253d57;
+      --orange:     #f47c20;
+      --orange-dark:#c45f00;
+      --orange-soft:#fff3e8;
+      --text:       #e8edf2;
+      --text-dim:   #8fa3b8;
+      --border:     #2e4460;
+      --card:       #162334;
+      --input-bg:   #1a2d42;
+      --error:      #ff6b6b;
+      --success:    #4caf88;
+      --radius:     12px;
+      --radius-sm:  8px;
+      --shadow:     0 4px 24px rgba(0,0,0,0.35);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Heebo', sans-serif;
+      background: var(--navy);
+      color: var(--text);
+      min-height: 100vh;
+      direction: rtl;
+    }
+
+    /* ── HEADER ── */
+    .site-header {
+      background: linear-gradient(135deg, var(--navy-mid) 0%, var(--navy) 100%);
+      border-bottom: 2px solid var(--orange);
+      padding: 28px 24px 24px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.5);
+    }
+    .site-header h1 {
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+    .site-header h1 span { color: var(--orange); }
+    .site-header p {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap {
+      background: var(--navy-mid);
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 93px;
+      z-index: 99;
+    }
+    .progress-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+    }
+    .progress-row strong { color: var(--orange); font-size: 1rem; }
+    .progress-bar-track {
+      height: 8px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--orange), #ffaa55);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+
+    /* ── LAYOUT ── */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 16px 80px;
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+      transition: border-color 0.2s;
+    }
+    .card:focus-within { border-color: var(--orange); }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+      box-shadow: 0 2px 12px rgba(244,124,32,0.4);
+    }
+    .card-title { font-size: 1.2rem; font-weight: 700; color: #fff; }
+    .card-subtitle { font-size: 0.8rem; color: var(--text-dim); margin-top: 2px; }
+
+    /* ── FORM FIELDS ── */
+    .field-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .field-group.full { grid-template-columns: 1fr; }
+    @media(max-width:600px) { .field-group { grid-template-columns: 1fr; } }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field.span2 { grid-column: 1 / -1; }
+
+    label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    label .req { color: var(--orange); margin-right: 2px; }
+    .helper {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-top: -2px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="email"],
+    input[type="tel"],
+    textarea,
+    select {
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: 'Heebo', sans-serif;
+      font-size: 0.92rem;
+      padding: 10px 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+      direction: rtl;
+    }
+    input[readonly] {
+      opacity: 0.6;
+      cursor: default;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--orange);
+      box-shadow: 0 0 0 3px rgba(244,124,32,0.15);
+    }
+    input.error, textarea.error { border-color: var(--error) !important; }
+    .error-msg {
+      font-size: 0.75rem;
+      color: var(--error);
+      display: none;
+    }
+    .error-msg.show { display: block; }
+
+    textarea { resize: vertical; min-height: 90px; }
+    textarea.tall { min-height: 120px; }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.7);
+      cursor: pointer;
+    }
+
+    /* ── RADIO BUTTONS ── */
+    .radio-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .radio-btn {
+      position: relative;
+    }
+    .radio-btn input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .radio-btn label {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 7px 16px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.875rem;
+      transition: all 0.18s;
+      white-space: nowrap;
+    }
+    .radio-btn input:checked + label {
+      background: var(--orange);
+      border-color: var(--orange);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(244,124,32,0.4);
+    }
+    .radio-btn label:hover { border-color: var(--orange); }
+
+    /* ── CATEGORY CHECKLIST ── */
+    .categories-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .cat-item {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .cat-item.active { border-color: var(--orange); }
+
+    .cat-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      background: var(--input-bg);
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .cat-header:hover { background: var(--navy-light); }
+
+    .cat-checkbox {
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-radius: 5px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+      background: var(--navy);
+    }
+    .cat-item.active .cat-checkbox {
+      background: var(--orange);
+      border-color: var(--orange);
+    }
+    .cat-checkbox svg { display: none; }
+    .cat-item.active .cat-checkbox svg { display: block; }
+
+    .cat-info { flex: 1; }
+    .cat-name { font-weight: 600; font-size: 0.92rem; }
+    .cat-desc { font-size: 0.75rem; color: var(--text-dim); margin-top: 2px; }
+
+    .cat-expand {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      transition: transform 0.2s;
+    }
+    .cat-item.active .cat-expand { transform: rotate(180deg); }
+
+    .cat-body {
+      display: none;
+      padding: 16px;
+      background: rgba(13,27,42,0.5);
+      border-top: 1px solid var(--border);
+    }
+    .cat-item.active .cat-body { display: block; }
+
+    .cat-body .field-group { margin-bottom: 0; }
+
+    .importance-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .imp-btn {
+      position: relative;
+    }
+    .imp-btn input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .imp-btn label {
+      display: flex; align-items: center;
+      background: var(--navy);
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 12px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .imp-btn.must input:checked + label   { background: #7b2d2d; border-color: #c0392b; color: #ff9999; }
+    .imp-btn.nice input:checked + label   { background: #1e4d2b; border-color: #27ae60; color: #7fe0a0; }
+    .imp-btn.wanted input:checked + label { background: #1a3a5c; border-color: #2980b9; color: #7dbdff; }
+    .imp-btn label:hover { border-color: var(--orange); }
+
+    /* ── CONTACT FIELDS ── */
+    .contact-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+    }
+    @media(max-width:600px) { .contact-row { grid-template-columns: 1fr; } }
+
+    /* ── SUBMIT ── */
+    .submit-area {
+      text-align: center;
+      margin-top: 8px;
+    }
+    .btn-submit {
+      background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      font-family: 'Heebo', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      padding: 14px 52px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 20px rgba(244,124,32,0.45);
+      letter-spacing: 0.5px;
+    }
+    .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(244,124,32,0.55); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+    .submit-note { font-size: 0.78rem; color: var(--text-dim); margin-top: 10px; }
+
+    /* ── TOAST / SUCCESS ── */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--success);
+      color: #fff;
+      border-radius: 50px;
+      padding: 14px 32px;
+      font-size: 1rem;
+      font-weight: 600;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+      z-index: 9999;
+      transition: transform 0.4s cubic-bezier(.175,.885,.32,1.275);
+      pointer-events: none;
+      text-align: center;
+      max-width: 90vw;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.error-toast { background: var(--error); }
+
+    /* ── DIVIDERS ── */
+    .section-sep { margin: 8px 0 20px; border: none; border-top: 1px solid var(--border); }
+
+    /* ── OPTIONAL BADGE ── */
+    .opt-badge {
+      font-size: 0.7rem;
+      background: var(--navy-light);
+      color: var(--text-dim);
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>📋 בקשת <span>פרויקט הנדסי</span></h1>
+  <p>מלא את הטופס בשלמות כדי לאפשר לצוות ההנדסה לטפל בבקשתך ביעילות</p>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-row">
+    <span>התקדמות מילוי הטופס</span>
+    <strong id="progress-pct">0%</strong>
+  </div>
+  <div class="progress-bar-track">
+    <div class="progress-bar-fill" id="progress-fill"></div>
+  </div>
+</div>
+
+<div class="container">
+  <form id="mainForm" novalidate>
+
+    <!-- ══════════════════════════════════
+         SECTION 1 — פרטים כלליים
+    ══════════════════════════════════ -->
+    <div class="card" id="sec1">
+      <div class="card-header">
+        <div class="card-icon">📁</div>
+        <div>
+          <div class="card-title">פרטים כלליים</div>
+          <div class="card-subtitle">מידע בסיסי על הפרויקט המבוקש</div>
+        </div>
+      </div>
+
+      <div class="field-group">
+
+        <div class="field">
+          <label>תאריך הגשה</label>
+          <input type="text" id="f_date" readonly />
+        </div>
+
+        <div class="field">
+          <label for="f_project_name">שם הפרויקט <span class="req">*</span></label>
+          <input type="text" id="f_project_name" placeholder="לדוג': מכונת אריזה אוטומטית" />
+          <span class="error-msg" id="err_project_name">נא להזין שם פרויקט</span>
+        </div>
+
+        <div class="field">
+          <label for="f_requester">דורש הפרויקט — שם מלא <span class="req">*</span></label>
+          <input type="text" id="f_requester" placeholder="שם פרטי + משפחה" />
+          <span class="error-msg" id="err_requester">נא להזין שם מלא</span>
+        </div>
+
+        <div class="field">
+          <label for="f_dept">מחלקה <span class="req">*</span></label>
+          <input type="text" id="f_dept" placeholder="לדוג': ייצור, לוגיסטיקה, R&D" />
+          <span class="error-msg" id="err_dept">נא להזין מחלקה</span>
+        </div>
+
+        <div class="field span2">
+          <label for="f_problem">תיאור הבעיה <span class="req">*</span></label>
+          <textarea class="tall" id="f_problem" placeholder="תאר בקצרה את הבעיה או הצורך שהביא לבקשה זו"></textarea>
+          <span class="helper">מה הכאב? מה לא עובד? מה חסר?</span>
+          <span class="error-msg" id="err_problem">נא לתאר את הבעיה</span>
+        </div>
+
+        <div class="field span2">
+          <label for="f_goals">מטרות ויעדי הפרויקט <span class="req">*</span></label>
+          <textarea class="tall" id="f_goals" placeholder="מה הפרויקט אמור להשיג? מהם הקריטריונים להצלחה?"></textarea>
+          <span class="error-msg" id="err_goals">נא לפרט את מטרות הפרויקט</span>
+        </div>
+
+        <div class="field">
+          <label for="f_target_date">תאריך יעד רצוי <span class="req">*</span></label>
+          <input type="date" id="f_target_date" />
+          <span class="helper">תאריך משוער להשלמת הפרויקט</span>
+          <span class="error-msg" id="err_target_date">נא לבחור תאריך יעד</span>
+        </div>
+
+        <div class="field">
+          <label>עדיפות <span class="req">*</span></label>
+          <div class="radio-group" id="f_priority_wrap">
+            <div class="radio-btn"><input type="radio" name="priority" id="p1" value="נמוכה" /><label for="p1">🟢 נמוכה</label></div>
+            <div class="radio-btn"><input type="radio" name="priority" id="p2" value="בינונית" /><label for="p2">🟡 בינונית</label></div>
+            <div class="radio-btn"><input type="radio" name="priority" id="p3" value="גבוהה" /><label for="p3">🟠 גבוהה</label></div>
+            <div class="radio-btn"><input type="radio" name="priority" id="p4" value="קריטית" /><label for="p4">🔴 קריטית</label></div>
+          </div>
+          <span class="error-msg" id="err_priority">נא לבחור עדיפות</span>
+        </div>
+
+        <div class="field span2">
+          <label for="f_budget">תקציב משוער <span class="opt-badge">אופציונלי — אם ידוע</span></label>
+          <input type="text" id="f_budget" placeholder="לדוג': ₪50,000 – ₪80,000" />
+        </div>
+
+      </div>
+    </div><!-- /sec1 -->
+
+
+    <!-- ══════════════════════════════════
+         SECTION 2 — פירוט דרישות
+    ══════════════════════════════════ -->
+    <div class="card" id="sec2">
+      <div class="card-header">
+        <div class="card-icon">⚙️</div>
+        <div>
+          <div class="card-title">פירוט דרישות — קטגוריות מוכנות</div>
+          <div class="card-subtitle">סמן קטגוריות רלוונטיות והוסף פרטים לכל אחת</div>
+        </div>
+      </div>
+
+      <div class="categories-grid" id="cat-grid">
+        <!-- generated by JS -->
+      </div>
+    </div><!-- /sec2 -->
+
+
+    <!-- ══════════════════════════════════
+         SECTION 3 — דרישות נוספות
+    ══════════════════════════════════ -->
+    <div class="card" id="sec3">
+      <div class="card-header">
+        <div class="card-icon">✏️</div>
+        <div>
+          <div class="card-title">דרישות נוספות — שדה חופשי</div>
+          <div class="card-subtitle">כל דרישה שלא מצאת בקטגוריות למעלה</div>
+        </div>
+      </div>
+      <div class="field">
+        <textarea class="tall" id="f_extra" placeholder="פרט כל דרישה שלא מצאת בקטגוריות למעלה — חומרים מיוחדים, אילוצים גיאוגרפיים, דרישות עיצוב ועוד..."></textarea>
+      </div>
+    </div><!-- /sec3 -->
+
+
+    <!-- ══════════════════════════════════
+         SECTION 4 — ניהול ואחריות
+    ══════════════════════════════════ -->
+    <div class="card" id="sec4">
+      <div class="card-header">
+        <div class="card-icon">👤</div>
+        <div>
+          <div class="card-title">ניהול ואחריות</div>
+          <div class="card-subtitle">אנשי קשר לטיפול בבקשה</div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="field">
+          <label for="f_pm">מנהל הפרויקט <span class="req">*</span></label>
+          <input type="text" id="f_pm" placeholder="שם מלא" />
+          <span class="error-msg" id="err_pm">נא להזין שם מנהל פרויקט</span>
+        </div>
+
+        <div class="field">
+          <label for="f_contact_name">איש קשר לשאלות <span class="req">*</span></label>
+          <input type="text" id="f_contact_name" placeholder="שם מלא" />
+          <span class="error-msg" id="err_contact_name">נא להזין שם איש קשר</span>
+        </div>
+
+        <div class="field">
+          <label for="f_contact_phone">טלפון איש קשר <span class="req">*</span></label>
+          <input type="tel" id="f_contact_phone" placeholder="050-0000000" />
+          <span class="error-msg" id="err_contact_phone">נא להזין מספר טלפון</span>
+        </div>
+
+        <div class="field">
+          <label for="f_contact_email">אימייל איש קשר <span class="req">*</span></label>
+          <input type="email" id="f_contact_email" placeholder="name@company.com" />
+          <span class="error-msg" id="err_contact_email">נא להזין כתובת אימייל תקינה</span>
+        </div>
+      </div>
+    </div><!-- /sec4 -->
+
+
+    <!-- ══════════════════════════════════
+         SUBMIT
+    ══════════════════════════════════ -->
+    <div class="card submit-area">
+      <button type="submit" class="btn-submit" id="btn-submit">📨 שלח בקשה</button>
+      <p class="submit-note">לאחר השליחה תתקבל הודעת אישור • הבקשה תועבר לצוות ההנדסה</p>
+    </div>
+
+  </form>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── EMAILJS CREDENTIALS ──────────────────────────────────────────
+// REPLACE WITH YOUR EMAILJS CREDENTIALS
+const EMAILJS_SERVICE_ID  = "service_711tesl";
+const EMAILJS_TEMPLATE_ID = "template_7cwruzh";
+const EMAILJS_PUBLIC_KEY  = "J99uNZtvYsRguzsYj";
+// ─────────────────────────────────────────────────────────────────
+
+emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+// ── CATEGORIES DATA ──────────────────────────────────────────────
+const CATEGORIES = [
+  { id: "safety",      name: "בטיחות",             desc: "דרישות בטיחות למפעילים ולסביבה" },
+  { id: "location",    name: "מיקום והתקנה",        desc: "האם המכונה קבועה או ניידת? מגבלות מרחב?" },
+  { id: "throughput",  name: "קצב ותפוקה",          desc: "מהו קצב העבודה הנדרש? יחידות לשעה / למשמרת?" },
+  { id: "replication", name: "שכפול",               desc: "האם מתוכנן לייצר יחידות נוספות בעתיד?" },
+  { id: "maintenance", name: "תחזוקה",              desc: "דרישות זמינות, MTBF, נגישות לתחזוקה" },
+  { id: "hmi",         name: "ממשק אופרטור",        desc: "כמה אופרטורים? רמת מיומנות? HMI נדרש?" },
+  { id: "electrical",  name: "חשמל ובקרה",          desc: "מתח עבודה, אוטומציה, חיישנים, בקרה" },
+  { id: "environment", name: "סביבת עבודה",         desc: "טמפרטורה, לחות, אבק, חומרים מסוכנים" },
+  { id: "materials",   name: "חומרים ומגע מוצר",    desc: "האם המכונה באה במגע עם מזון / תרופות / חומרים רגישים?" },
+  { id: "standards",   name: "תקנים ורגולציה",      desc: "CE, FDA, ISO, תקנים ספציפיים נדרשים" },
+  { id: "integration", name: "אינטגרציה",           desc: "חיבור למערכות קיימות, ERP, ציוד קיים" },
+];
+
+// ── BUILD CATEGORIES ─────────────────────────────────────────────
+const grid = document.getElementById("cat-grid");
+
+CATEGORIES.forEach(cat => {
+  const item = document.createElement("div");
+  item.className = "cat-item";
+  item.dataset.id = cat.id;
+
+  item.innerHTML = `
+    <div class="cat-header">
+      <div class="cat-checkbox">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="cat-info">
+        <div class="cat-name">${cat.name}</div>
+        <div class="cat-desc">${cat.desc}</div>
+      </div>
+      <div class="cat-expand">▼</div>
+    </div>
+    <div class="cat-body">
+      <div class="field-group">
+        <div class="field span2">
+          <label>תיאור הדרישה</label>
+          <textarea data-cat-desc="${cat.id}" placeholder="פרט את הדרישות הספציפיות בקטגוריה זו..."></textarea>
+        </div>
+        <div class="field span2">
+          <label>חשיבות</label>
+          <div class="importance-group">
+            <div class="imp-btn must">
+              <input type="radio" name="imp_${cat.id}" id="imp_${cat.id}_must" value="חובה" />
+              <label for="imp_${cat.id}_must">🔴 חובה</label>
+            </div>
+            <div class="imp-btn wanted">
+              <input type="radio" name="imp_${cat.id}" id="imp_${cat.id}_wanted" value="רצוי" />
+              <label for="imp_${cat.id}_wanted">🔵 רצוי</label>
+            </div>
+            <div class="imp-btn nice">
+              <input type="radio" name="imp_${cat.id}" id="imp_${cat.id}_nice" value="נחמד לקיים" />
+              <label for="imp_${cat.id}_nice">🟢 נחמד לקיים</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  item.querySelector(".cat-header").addEventListener("click", () => {
+    item.classList.toggle("active");
+    updateProgress();
+  });
+
+  grid.appendChild(item);
+});
+
+// ── AUTO DATE ─────────────────────────────────────────────────────
+const today = new Date();
+document.getElementById("f_date").value =
+  today.toLocaleDateString("he-IL", { year: "numeric", month: "long", day: "numeric" });
+
+// Set min date for target date picker
+document.getElementById("f_target_date").min = today.toISOString().split("T")[0];
+
+// ── PROGRESS ─────────────────────────────────────────────────────
+const requiredFields = [
+  "f_project_name","f_requester","f_dept","f_problem","f_goals","f_target_date",
+  "f_pm","f_contact_name","f_contact_phone","f_contact_email"
+];
+
+function updateProgress() {
+  let filled = 0;
+  requiredFields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.value.trim()) filled++;
+  });
+  // priority radio
+  if (document.querySelector('input[name="priority"]:checked')) filled++;
+  const total = requiredFields.length + 1;
+  const pct = Math.round((filled / total) * 100);
+  document.getElementById("progress-fill").style.width = pct + "%";
+  document.getElementById("progress-pct").textContent = pct + "%";
+}
+
+requiredFields.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener("input", updateProgress);
+});
+document.querySelectorAll('input[name="priority"]').forEach(r => r.addEventListener("change", updateProgress));
+
+// ── VALIDATION ───────────────────────────────────────────────────
+function showErr(id, show) {
+  const el = document.getElementById("err_" + id);
+  const inp = document.getElementById("f_" + id);
+  if (el) el.classList.toggle("show", show);
+  if (inp) inp.classList.toggle("error", show);
+}
+
+function validateEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+function validate() {
+  let ok = true;
+  const req = ["project_name","requester","dept","problem","goals","target_date","pm","contact_name","contact_phone"];
+  req.forEach(k => {
+    const v = document.getElementById("f_" + k)?.value.trim();
+    const bad = !v;
+    showErr(k, bad);
+    if (bad) ok = false;
+  });
+  // email
+  const emailVal = document.getElementById("f_contact_email").value.trim();
+  const emailBad = !validateEmail(emailVal);
+  showErr("contact_email", emailBad);
+  if (emailBad) ok = false;
+  // priority
+  const priBad = !document.querySelector('input[name="priority"]:checked');
+  document.getElementById("err_priority").classList.toggle("show", priBad);
+  if (priBad) ok = false;
+  return ok;
+}
+
+// ── BUILD EMAIL BODY ─────────────────────────────────────────────
+function buildEmailBody() {
+  const g = id => document.getElementById("f_" + id)?.value?.trim() || "—";
+  const priority = document.querySelector('input[name="priority"]:checked')?.value || "—";
+
+  let catRows = "";
+  document.querySelectorAll(".cat-item.active").forEach(item => {
+    const id   = item.dataset.id;
+    const name = item.querySelector(".cat-name").textContent;
+    const desc = item.querySelector(`[data-cat-desc="${id}"]`)?.value?.trim() || "—";
+    const imp  = item.querySelector(`input[name="imp_${id}"]:checked`)?.value || "לא צוין";
+    catRows += `
+      <tr>
+        <td style="padding:8px 12px;border-bottom:1px solid #e0e0e0;font-weight:600;">${name}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e0e0e0;">${imp}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e0e0e0;">${desc}</td>
+      </tr>`;
+  });
+  if (!catRows) catRows = `<tr><td colspan="3" style="padding:8px 12px;color:#888;">לא נבחרו קטגוריות</td></tr>`;
+
+  const row = (label, value) =>
+    `<tr>
+      <td style="padding:7px 12px;font-weight:600;color:#555;white-space:nowrap;border-bottom:1px solid #f0f0f0;width:35%;">${label}</td>
+      <td style="padding:7px 12px;border-bottom:1px solid #f0f0f0;">${value}</td>
+    </tr>`;
+
+  const nl2br = v => v.replace(/\n/g, "<br/>");
+
+  return `
+<div dir="rtl" style="direction:rtl;text-align:right;font-family:Arial,sans-serif;font-size:14px;color:#222;max-width:700px;margin:0 auto;">
+
+  <div style="background:#0d1b2a;color:#fff;padding:20px 24px;border-radius:8px 8px 0 0;">
+    <h2 style="margin:0;font-size:20px;">📋 בקשת פרויקט הנדסי חדשה</h2>
+    <p style="margin:6px 0 0;color:#f47c20;font-size:15px;">${g("project_name")}</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #ddd;border-top:none;border-radius:0 0 8px 8px;padding:24px;">
+
+    <h3 style="color:#0d1b2a;border-bottom:2px solid #f47c20;padding-bottom:6px;">פרטים כלליים</h3>
+    <table style="width:100%;border-collapse:collapse;">
+      ${row("תאריך הגשה", g("date"))}
+      ${row("שם הפרויקט", g("project_name"))}
+      ${row("דורש הפרויקט", g("requester"))}
+      ${row("מחלקה", g("dept"))}
+      ${row("עדיפות", priority)}
+      ${row("תאריך יעד", g("target_date"))}
+      ${row("תקציב משוער", g("budget"))}
+    </table>
+
+    <h3 style="color:#0d1b2a;border-bottom:2px solid #f47c20;padding-bottom:6px;margin-top:24px;">תיאור הבעיה</h3>
+    <p style="background:#f9f9f9;padding:12px;border-radius:6px;line-height:1.7;">${nl2br(g("problem"))}</p>
+
+    <h3 style="color:#0d1b2a;border-bottom:2px solid #f47c20;padding-bottom:6px;margin-top:24px;">מטרות ויעדי הפרויקט</h3>
+    <p style="background:#f9f9f9;padding:12px;border-radius:6px;line-height:1.7;">${nl2br(g("goals"))}</p>
+
+    <h3 style="color:#0d1b2a;border-bottom:2px solid #f47c20;padding-bottom:6px;margin-top:24px;">קטגוריות דרישות</h3>
+    <table style="width:100%;border-collapse:collapse;background:#f9f9f9;border-radius:6px;">
+      <tr style="background:#0d1b2a;color:#fff;">
+        <th style="padding:8px 12px;text-align:right;">קטגוריה</th>
+        <th style="padding:8px 12px;text-align:right;">חשיבות</th>
+        <th style="padding:8px 12px;text-align:right;">פירוט</th>
+      </tr>
+      ${catRows}
+    </table>
+
+    <h3 style="color:#0d1b2a;border-bottom:2px solid #f47c20;padding-bottom:6px;margin-top:24px;">דרישות נוספות</h3>
+    <p style="background:#f9f9f9;padding:12px;border-radius:6px;line-height:1.7;">${nl2br(g("extra"))}</p>
+
+    <h3 style="color:#0d1b2a;border-bottom:2px solid #f47c20;padding-bottom:6px;margin-top:24px;">ניהול ואחריות</h3>
+    <table style="width:100%;border-collapse:collapse;">
+      ${row("מנהל פרויקט", g("pm"))}
+      ${row("איש קשר", g("contact_name"))}
+      ${row("טלפון", g("contact_phone"))}
+      ${row("אימייל", g("contact_email"))}
+    </table>
+
+  </div>
+</div>`.trim();
+}
+
+// ── TOAST ────────────────────────────────────────────────────────
+function showToast(msg, isError = false) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.toggle("error-toast", isError);
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 4000);
+}
+
+// ── SUBMIT ───────────────────────────────────────────────────────
+document.getElementById("mainForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  if (!validate()) {
+    showToast("יש שדות חסרים — נא לבדוק את הטופס", true);
+    const firstErr = document.querySelector(".error.show, .error-msg.show");
+    firstErr?.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+
+  const btn = document.getElementById("btn-submit");
+  btn.disabled = true;
+  btn.textContent = "⏳ שולח...";
+
+  const projectName = document.getElementById("f_project_name").value.trim();
+
+  const params = {
+    subject:  `בקשת פרויקט הנדסי חדשה - ${projectName}`,
+    message:  buildEmailBody(),
+    name:     document.getElementById("f_requester").value.trim(),
+    reply_to: document.getElementById("f_contact_email").value.trim(),
+  };
+
+  console.log("EmailJS → SERVICE_ID:",  EMAILJS_SERVICE_ID);
+  console.log("EmailJS → TEMPLATE_ID:", EMAILJS_TEMPLATE_ID);
+  console.log("EmailJS → PUBLIC_KEY:",  EMAILJS_PUBLIC_KEY);
+  console.log("EmailJS → params:", JSON.stringify(params, null, 2));
+
+  try {
+    const response = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params);
+    console.log("EmailJS → success:", response.status, response.text);
+    showToast("✅ הבקשה נשלחה בהצלחה! נחזור אליך בהקדם.");
+    btn.textContent = "✅ נשלח!";
+  } catch (err) {
+    console.error("EmailJS → error status:", err.status);
+    console.error("EmailJS → error text:",   err.text);
+    console.error("EmailJS → full error:",   JSON.stringify(err, null, 2));
+    showToast("שגיאה בשליחה — נסה שנית או פנה ישירות לצוות ההנדסה", true);
+    btn.disabled = false;
+    btn.textContent = "📨 שלח בקשה";
+  }
+});
+
+// ── LIVE CLEAR ERRORS ────────────────────────────────────────────
+document.querySelectorAll("input, textarea").forEach(el => {
+  el.addEventListener("input", () => {
+    el.classList.remove("error");
+    const errId = el.id?.replace("f_", "err_");
+    if (errId) document.getElementById(errId)?.classList.remove("show");
+  });
+});
+
+updateProgress();
+</script>
+</body>
+</html>
