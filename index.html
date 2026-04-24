@@ -6,6 +6,7 @@
   <title>בקשת פרויקט הנדסי</title>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -33,7 +34,6 @@
 
     body {
       font-family: 'Heebo', sans-serif;
-      /* bg.jpg with dark overlay as two background layers */
       background:
         linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
         url('bg.jpg') center / cover fixed no-repeat;
@@ -72,7 +72,6 @@
       flex-shrink: 0;
       filter: brightness(0) invert(1);
     }
-    /* Text on the left side (end in RTL flex) */
     .header-text {
       direction: ltr;
       text-align: left;
@@ -395,6 +394,125 @@
       vertical-align: middle;
       font-weight: 500;
     }
+
+    /* ── IMAGE UPLOAD ── */
+    .upload-dropzone {
+      border: 2px dashed var(--border-dim);
+      border-radius: var(--radius-sm);
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: rgba(15,32,8,0.4);
+      position: relative;
+    }
+    .upload-dropzone:hover,
+    .upload-dropzone.drag-over {
+      border-color: var(--green-mid);
+      background: rgba(45,90,39,0.2);
+    }
+    .upload-dropzone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: none;
+      padding: 0;
+    }
+    .upload-icon { font-size: 2.4rem; margin-bottom: 10px; line-height: 1; }
+    .upload-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-soft);
+      margin-bottom: 4px;
+    }
+    .upload-hint { font-size: 0.78rem; color: var(--text-dim); }
+
+    .image-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .image-thumb {
+      position: relative;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      aspect-ratio: 1;
+      border: 1.5px solid var(--border-dim);
+      background: rgba(10,20,5,0.6);
+    }
+    .image-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .image-thumb-name {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.65);
+      font-size: 0.65rem;
+      color: #ccc;
+      padding: 3px 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+    }
+    .image-thumb-remove {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(192,57,43,0.85);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background 0.15s;
+    }
+    .image-thumb-remove:hover { background: #e74c3c; }
+
+    .upload-count {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+    .upload-count span { color: var(--green-bright); font-weight: 700; }
+
+    .upload-status {
+      margin-top: 12px;
+      font-size: 0.85rem;
+      color: var(--text-soft);
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    .upload-status.visible { display: flex; }
+    .upload-status.success { color: var(--green-bright); }
+    .upload-status.failure { color: #ff9999; }
+    .upload-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(74,140,63,0.3);
+      border-top-color: var(--green-bright);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -535,7 +653,39 @@
 
 
     <!-- ══════════════════════════════════
-         SECTION 4 — ניהול ואחריות
+         SECTION 4 — צירוף תמונות / סרטוטים
+    ══════════════════════════════════ -->
+    <div class="card" id="sec-images">
+      <div class="card-header">
+        <div class="card-icon">📷</div>
+        <div>
+          <div class="card-title">צירוף תמונות / סרטוטים</div>
+          <div class="card-subtitle">ניתן לצרף עד 5 תמונות — יועלו אוטומטית ל-Google Drive בעת השליחה</div>
+        </div>
+      </div>
+
+      <div class="upload-dropzone" id="upload-dropzone">
+        <input type="file" id="image-input" accept="image/*" multiple />
+        <div class="upload-icon">🖼️</div>
+        <div class="upload-label">גרור תמונות לכאן או לחץ לבחירה</div>
+        <div class="upload-hint">PNG, JPG, JPEG, GIF, WebP — עד 5 תמונות</div>
+      </div>
+
+      <div class="upload-count" id="upload-count" style="display:none;">
+        <span id="upload-count-num">0</span> / 5 תמונות נבחרו
+      </div>
+
+      <div class="image-preview-grid" id="image-preview-grid"></div>
+
+      <div class="upload-status" id="upload-status">
+        <div class="upload-spinner" id="upload-spinner"></div>
+        <span id="upload-status-text"></span>
+      </div>
+    </div><!-- /sec-images -->
+
+
+    <!-- ══════════════════════════════════
+         SECTION 5 — ניהול ואחריות
     ══════════════════════════════════ -->
     <div class="card" id="sec4">
       <div class="card-header">
@@ -590,13 +740,165 @@
 
 <script>
 // ── EMAILJS CREDENTIALS ──────────────────────────────────────────
-// REPLACE WITH YOUR EMAILJS CREDENTIALS
 const EMAILJS_SERVICE_ID  = "service_711tesl";
 const EMAILJS_TEMPLATE_ID = "template_7cwruzh";
 const EMAILJS_PUBLIC_KEY  = "J99uNZtvYsRguzsYj";
 // ─────────────────────────────────────────────────────────────────
 
+// ── GOOGLE OAUTH ─────────────────────────────────────────────────
+const GOOGLE_CLIENT_ID = "1038177009743-e8mjkf0b905m2n0ahu7oka37sng72j29.apps.googleusercontent.com";
+const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
+
+let tokenClient = null;
+let driveToken = null;
+
+function initGoogleAuth() {
+  if (!window.google || !google.accounts) return;
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_CLIENT_ID,
+    scope: DRIVE_SCOPE,
+    callback: '',
+  });
+}
+
+function getAccessToken() {
+  return new Promise((resolve, reject) => {
+    if (!tokenClient) {
+      reject(new Error("Google auth not initialized"));
+      return;
+    }
+    tokenClient.callback = (resp) => {
+      if (resp.error) { reject(resp); return; }
+      driveToken = resp.access_token;
+      resolve(resp.access_token);
+    };
+    tokenClient.requestAccessToken({ prompt: driveToken ? '' : 'consent' });
+  });
+}
+
+async function driveCreateFolder(name, token) {
+  const res = await fetch("https://www.googleapis.com/drive/v3/files", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ name, mimeType: "application/vnd.google-apps.folder" }),
+  });
+  if (!res.ok) throw new Error("folder creation failed");
+  const data = await res.json();
+  return data.id;
+}
+
+async function driveMakePublic(fileId, token) {
+  await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ role: "reader", type: "anyone" }),
+  });
+}
+
+async function driveUploadFile(file, folderId, token) {
+  const meta = { name: file.name, parents: [folderId] };
+  const form = new FormData();
+  form.append("metadata", new Blob([JSON.stringify(meta)], { type: "application/json" }));
+  form.append("file", file);
+  const res = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${token}` },
+    body: form,
+  });
+  if (!res.ok) throw new Error(`upload failed: ${file.name}`);
+}
+// ─────────────────────────────────────────────────────────────────
+
 emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+// ── IMAGE UPLOAD UI ───────────────────────────────────────────────
+let selectedFiles = [];
+
+const imageInput   = document.getElementById("image-input");
+const previewGrid  = document.getElementById("image-preview-grid");
+const countWrap    = document.getElementById("upload-count");
+const countNum     = document.getElementById("upload-count-num");
+const dropzone     = document.getElementById("upload-dropzone");
+const uploadStatus = document.getElementById("upload-status");
+const uploadSpinner = document.getElementById("upload-spinner");
+const uploadStatusText = document.getElementById("upload-status-text");
+
+function setUploadStatus(state, text) {
+  uploadStatus.className = "upload-status";
+  if (!state) return;
+  uploadStatus.classList.add("visible");
+  if (state === "loading") uploadSpinner.style.display = "block";
+  else uploadSpinner.style.display = "none";
+  if (state === "success") uploadStatus.classList.add("success");
+  if (state === "failure") uploadStatus.classList.add("failure");
+  uploadStatusText.textContent = text;
+}
+
+function renderPreviews() {
+  previewGrid.innerHTML = "";
+  countNum.textContent = selectedFiles.length;
+  countWrap.style.display = selectedFiles.length > 0 ? "block" : "none";
+
+  selectedFiles.forEach((file, idx) => {
+    const thumb = document.createElement("div");
+    thumb.className = "image-thumb";
+
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(file);
+    img.alt = file.name;
+
+    const nameEl = document.createElement("div");
+    nameEl.className = "image-thumb-name";
+    nameEl.textContent = file.name;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "image-thumb-remove";
+    removeBtn.textContent = "✕";
+    removeBtn.setAttribute("aria-label", "הסר תמונה");
+    removeBtn.addEventListener("click", () => {
+      URL.revokeObjectURL(img.src);
+      selectedFiles.splice(idx, 1);
+      renderPreviews();
+      setUploadStatus(null, "");
+    });
+
+    thumb.appendChild(img);
+    thumb.appendChild(nameEl);
+    thumb.appendChild(removeBtn);
+    previewGrid.appendChild(thumb);
+  });
+}
+
+function addFiles(newFiles) {
+  const remaining = 5 - selectedFiles.length;
+  const toAdd = Array.from(newFiles).slice(0, remaining);
+  toAdd.forEach(f => {
+    if (f.type.startsWith("image/")) selectedFiles.push(f);
+  });
+  if (Array.from(newFiles).length > remaining) {
+    showToast(`ניתן לצרף עד 5 תמונות בלבד`, true);
+  }
+  renderPreviews();
+  setUploadStatus(null, "");
+}
+
+imageInput.addEventListener("change", () => {
+  addFiles(imageInput.files);
+  imageInput.value = "";
+});
+
+dropzone.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  dropzone.classList.add("drag-over");
+});
+dropzone.addEventListener("dragleave", () => dropzone.classList.remove("drag-over"));
+dropzone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dropzone.classList.remove("drag-over");
+  addFiles(e.dataTransfer.files);
+});
+// ─────────────────────────────────────────────────────────────────
 
 // ── CATEGORIES DATA ──────────────────────────────────────────────
 const CATEGORIES = [
@@ -674,7 +976,6 @@ const today = new Date();
 document.getElementById("f_date").value =
   today.toLocaleDateString("he-IL", { year: "numeric", month: "long", day: "numeric" });
 
-// Set min date for target date picker
 document.getElementById("f_target_date").min = today.toISOString().split("T")[0];
 
 // ── PROGRESS ─────────────────────────────────────────────────────
@@ -689,7 +990,6 @@ function updateProgress() {
     const el = document.getElementById(id);
     if (el && el.value.trim()) filled++;
   });
-  // priority radio
   if (document.querySelector('input[name="priority"]:checked')) filled++;
   const total = requiredFields.length + 1;
   const pct = Math.round((filled / total) * 100);
@@ -722,12 +1022,10 @@ function validate() {
     showErr(k, bad);
     if (bad) ok = false;
   });
-  // email
   const emailVal = document.getElementById("f_contact_email").value.trim();
   const emailBad = !validateEmail(emailVal);
   showErr("contact_email", emailBad);
   if (emailBad) ok = false;
-  // priority
   const priBad = !document.querySelector('input[name="priority"]:checked');
   document.getElementById("err_priority").classList.toggle("show", priBad);
   if (priBad) ok = false;
@@ -735,7 +1033,7 @@ function validate() {
 }
 
 // ── BUILD EMAIL BODY ─────────────────────────────────────────────
-function buildEmailBody() {
+function buildEmailBody(driveFolderLink, driveUploadFailed) {
   const g = id => document.getElementById("f_" + id)?.value?.trim() || "—";
   const priority = document.querySelector('input[name="priority"]:checked')?.value || "—";
   const nl2br = v => v.replace(/\n/g, "<br/>");
@@ -771,6 +1069,27 @@ function buildEmailBody() {
 
   const textBox = content =>
     `<div style="background:#f9f9f9;border-right:3px solid #2d5a27;padding:13px 16px;border-radius:0 4px 4px 0;line-height:1.8;color:#333;font-size:13.5px;">${content}</div>`;
+
+  // Build images section HTML
+  let imagesSection = "";
+  if (driveFolderLink) {
+    imagesSection = `
+    ${sec("תמונות וסרטוטים")}
+    <div style="background:#e8f5e3;border:1px solid #b8ddb0;border-radius:6px;padding:14px 18px;">
+      <div style="font-weight:700;color:#2d5a27;margin-bottom:6px;">📁 תיקיית Google Drive</div>
+      <a href="${driveFolderLink}" target="_blank"
+         style="color:#1a73e8;text-decoration:none;font-size:13px;word-break:break-all;">${driveFolderLink}</a>
+      <div style="margin-top:8px;font-size:12px;color:#555;">
+        ${selectedFiles.length} תמונה/ות הועלו לתיקייה — לחץ על הקישור לצפייה
+      </div>
+    </div>`;
+  } else if (driveUploadFailed) {
+    imagesSection = `
+    ${sec("תמונות וסרטוטים")}
+    <div style="background:#fff3f3;border:1px solid #f5c6c6;border-radius:6px;padding:14px 18px;color:#c0392b;font-size:13px;">
+      ⚠️ העלאת התמונות ל-Google Drive נכשלה — יש לפנות לדורש הבקשה לקבלת הקבצים ישירות.
+    </div>`;
+  }
 
   return `
 <div dir="rtl" style="direction:rtl;text-align:right;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#1a1a1a;max-width:700px;margin:0 auto;">
@@ -828,6 +1147,8 @@ function buildEmailBody() {
     ${sec("דרישות נוספות")}
     ${textBox(nl2br(g("extra")))}
 
+    ${imagesSection}
+
     ${sec("ניהול ואחריות")}
     <table style="width:100%;border-collapse:collapse;">
       ${row("מנהל פרויקט", g("pm"),            0)}
@@ -871,9 +1192,47 @@ document.getElementById("mainForm").addEventListener("submit", async function(e)
 
   const projectName = document.getElementById("f_project_name").value.trim();
 
+  // ── Drive upload ───────────────────────────────────────────────
+  let driveFolderLink = null;
+  let driveUploadFailed = false;
+
+  if (selectedFiles.length > 0) {
+    setUploadStatus("loading", "מאמת גישה ל-Google Drive...");
+    btn.textContent = "🔐 מאמת גישה...";
+
+    try {
+      if (!tokenClient) initGoogleAuth();
+      const token = await getAccessToken();
+
+      setUploadStatus("loading", "יוצר תיקייה ב-Drive...");
+      btn.textContent = "📁 יוצר תיקייה...";
+
+      const folderName = `בקשת פרויקט - ${projectName}`;
+      const folderId = await driveCreateFolder(folderName, token);
+      await driveMakePublic(folderId, token);
+
+      btn.textContent = "📤 מעלה תמונות...";
+      for (let i = 0; i < selectedFiles.length; i++) {
+        setUploadStatus("loading", `מעלה תמונה ${i + 1} מתוך ${selectedFiles.length}...`);
+        await driveUploadFile(selectedFiles[i], folderId, token);
+      }
+
+      driveFolderLink = `https://drive.google.com/drive/folders/${folderId}`;
+      setUploadStatus("success", `✅ ${selectedFiles.length} תמונות הועלו בהצלחה`);
+
+    } catch (err) {
+      console.error("Drive upload error:", err);
+      driveUploadFailed = true;
+      setUploadStatus("failure", "⚠️ העלאה נכשלה — הבקשה תישלח ללא תמונות");
+    }
+  }
+
+  // ── Send email ─────────────────────────────────────────────────
+  btn.textContent = "📨 שולח בקשה...";
+
   const params = {
     subject:  `בקשת פרויקט הנדסי חדשה - ${projectName}`,
-    message:  buildEmailBody(),
+    message:  buildEmailBody(driveFolderLink, driveUploadFailed),
     name:     document.getElementById("f_requester").value.trim(),
     reply_to: document.getElementById("f_contact_email").value.trim(),
   };
@@ -881,7 +1240,6 @@ document.getElementById("mainForm").addEventListener("submit", async function(e)
   console.log("EmailJS → SERVICE_ID:",  EMAILJS_SERVICE_ID);
   console.log("EmailJS → TEMPLATE_ID:", EMAILJS_TEMPLATE_ID);
   console.log("EmailJS → PUBLIC_KEY:",  EMAILJS_PUBLIC_KEY);
-  console.log("EmailJS → params:", JSON.stringify(params, null, 2));
 
   try {
     const response = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params);
@@ -889,9 +1247,7 @@ document.getElementById("mainForm").addEventListener("submit", async function(e)
     showToast("✅ הבקשה נשלחה בהצלחה! נחזור אליך בהקדם.");
     btn.textContent = "✅ נשלח!";
   } catch (err) {
-    console.error("EmailJS → error status:", err.status);
-    console.error("EmailJS → error text:",   err.text);
-    console.error("EmailJS → full error:",   JSON.stringify(err, null, 2));
+    console.error("EmailJS → error:", err);
     showToast("שגיאה בשליחה — נסה שנית או פנה ישירות לצוות ההנדסה", true);
     btn.disabled = false;
     btn.textContent = "📨 שלח בקשה";
@@ -908,6 +1264,19 @@ document.querySelectorAll("input, textarea").forEach(el => {
 });
 
 updateProgress();
+
+// Initialize Google auth once GIS library is ready
+window.addEventListener("load", () => {
+  if (window.google && google.accounts) {
+    initGoogleAuth();
+  } else {
+    // GIS script loads async — wait for it
+    const gisScript = document.querySelector('script[src*="accounts.google.com"]');
+    if (gisScript) {
+      gisScript.addEventListener("load", initGoogleAuth);
+    }
+  }
+});
 </script>
 </body>
 </html>
